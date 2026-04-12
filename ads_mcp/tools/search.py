@@ -13,7 +13,9 @@
 # limitations under the License.
 
 """Tools for exposing the API Search method to the MCP server."""
-
+import json
+import uuid
+import os
 from typing import Any, Dict, List
 from ads_mcp.coordinator import mcp
 from fastmcp.tools import Tool
@@ -30,7 +32,7 @@ def search(
     conditions: List[str] = None,
     orderings: List[str] = None,
     limit: int = None,
-) -> List[Dict[str, Any]]:
+) -> List[str]:
     """Fetches data from the Google Ads API using the search method
 
     Args:
@@ -72,7 +74,35 @@ def search(
                 final_output.append(
                     utils.format_output_row(row, batch.field_mask.paths)
                 )
-        return final_output
+
+        # 1. The Empty Data Safeguard
+        if not final_output:
+            return ["The Google Ads API returned 0 results for this query. Do not use DuckDB. Adjust your conditions and try again."]
+
+        # 2. Dynamic Schema Extraction
+        detected_schema = list(final_output[0].keys())
+
+        # --- THE AUTOMATED DIRECTORY LOGIC ---
+        # 1. Try to get the path from the environment, default to a folder named "shared_data" in the current directory
+        shared_dir = os.environ.get("NAO_SHARED_DATA_DIR", os.path.join(os.getcwd(), "google_ads_data"))
+        
+        # 2. Force Python to create the folder if it doesn't exist yet!
+        os.makedirs(shared_dir, exist_ok=True)
+
+        # 3. Create the full file path safely
+        file_name = os.path.join(shared_dir, f"google_ads_{uuid.uuid4().hex[:8]}.json")
+        
+        with open(file_name, "w") as f:
+            json.dump(final_output, f, indent=2)
+        # 5. Return the instruction to Nao
+        instruction_text = (
+            f"Data successfully saved to '{file_name}'.\n"
+            f"The schema matches your GAQL fields: {detected_schema}.\n"
+            f"Use your execute_sql tool and DuckDB to query it: SELECT * FROM read_json_auto('{file_name}')"
+        )
+        
+        return [instruction_text]
+    
     except GoogleAdsException as ex:
         error_msgs = [
             f"Google Ads API Error: {error.message}"
