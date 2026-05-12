@@ -1,0 +1,30 @@
+name: Sync Fork with Specific Commit
+
+on:
+  workflow_dispatch:  # Manual trigger from Actions tab
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sundays at midnight (adjust as needed)
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+      
+      - name: Sync with upstream and cherry-pick commit
+        run: |
+          git remote add upstream https://github.com/googleads/google-ads-mcp.git
+          git fetch upstream
+          git reset --hard upstream/main
+          git cherry-pick 81526bc
+      
+      - name: Push to fork
+        run: |
+          git push origin main --force
