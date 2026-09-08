@@ -9,42 +9,13 @@
       "annotations": {
         "readOnlyHint": true
       },
-      "description": "Retrieves the selectable, filterable, and sortable fields for a specific Google Ads resource,\nincluding compatible metrics and segments.\n\nUse this tool to find out which fields you can select, filter by, or sort by\nwhen querying a specific resource (e.g., 'campaign', 'ad_group').\nThis tool also returns metrics and segments that can be selected with the resource.\nTheir names start with 'metrics.' and 'segments.' respectively.\n\nDo not guess fields, you MUST use this tool to discover them before constructing a query for the\n`search` tool.\n\nThe responses of this tool should be cached, as they don't change frequently.",
-      "inputSchema": {
-        "additionalProperties": false,
-        "properties": {
-          "resource_name": {
-            "description": "The name of the Google Ads resource (e.g., 'campaign', 'ad_group').",
-            "type": "string"
-          }
-        },
-        "required": [
-          "resource_name"
-        ],
-        "type": "object"
-      },
-      "name": "get_resource_metadata",
-      "outputSchema": {
-        "additionalProperties": true,
-        "type": "object"
-      }
-    },
-    {
-      "_meta": {
-        "fastmcp": {
-          "tags": []
-        }
-      },
-      "annotations": {
-        "readOnlyHint": true
-      },
       "description": "Returns ids of customers directly accessible by the user authenticating the call.\n\nUse this tool first to discover available customer IDs if the user hasn't\nprovided one. Most other tools require a valid customer ID as input.\n\nReturns:\n    List[str]: A list of customer IDs.",
       "inputSchema": {
         "additionalProperties": false,
         "properties": {},
         "type": "object"
       },
-      "name": "list_accessible_customers",
+      "name": "customers_list_accessible_customers",
       "outputSchema": {
         "properties": {
           "result": {
@@ -70,12 +41,41 @@
       "annotations": {
         "readOnlyHint": true
       },
+      "description": "Retrieves the selectable, filterable, and sortable fields for a specific Google Ads resource,\nincluding compatible metrics and segments.\n\nUse this tool to find out which fields you can select, filter by, or sort by\nwhen querying a specific resource (e.g., 'campaign', 'ad_group').\nThis tool also returns metrics and segments that can be selected with the resource.\nTheir names start with 'metrics.' and 'segments.' respectively.\n\nDo not guess fields, you MUST use this tool to discover them before constructing a query for the\n`search` tool.\n\nThe responses of this tool should be cached, as they don't change frequently.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "resource_name": {
+            "description": "The name of the Google Ads resource (e.g., 'campaign', 'ad_group').",
+            "type": "string"
+          }
+        },
+        "required": [
+          "resource_name"
+        ],
+        "type": "object"
+      },
+      "name": "metadata_get_resource_metadata",
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      }
+    },
+    {
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
       "description": "Fetches data from the Google Ads API using the search method",
       "inputSchema": {
         "additionalProperties": false,
         "properties": {
           "conditions": {
-            "default": null,
+            "default": [],
             "description": "List of conditions to filter the data, combined using AND clauses",
             "items": {
               "type": "string"
@@ -94,12 +94,19 @@
             "type": "array"
           },
           "limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "default": null,
-            "description": "The maximum number of rows to return",
-            "type": "integer"
+            "description": "The maximum number of rows to return"
           },
           "orderings": {
-            "default": null,
+            "default": [],
             "description": "How the data is ordered",
             "items": {
               "type": "string"
@@ -118,7 +125,7 @@
         ],
         "type": "object"
       },
-      "name": "search",
+      "name": "search_search",
       "outputSchema": {
         "properties": {
           "result": {

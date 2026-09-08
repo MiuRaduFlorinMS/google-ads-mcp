@@ -18,9 +18,11 @@
 
 from typing import Any
 import proto
+from google.protobuf.message import Message as PbMessage
+from google.protobuf.json_format import MessageToDict
 import logging
 from google.ads.googleads.client import GoogleAdsClient
-from google.ads.googleads.v24.services.services.google_ads_service import (
+from google.ads.googleads.v25.services.services.google_ads_service import (
     GoogleAdsServiceClient,
 )
 
@@ -29,17 +31,40 @@ import google.auth
 from ads_mcp.mcp_header_interceptor import MCPHeaderInterceptor
 import os
 import importlib.resources
+import contextlib
+import subprocess
+from unittest.mock import patch
 
 # filename for generated field information used by search
 _GAQL_FILENAME = "gaql_resources.txt"
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 # OAuth scope for the Google Ads API. Google Ads does not publish a separate
 # read-only scope; access is restricted to read methods by the tools this
 # server exposes (see ads_mcp/tools/).
 _ADS_SCOPE = "https://www.googleapis.com/auth/adwords"
+
+
+@contextlib.contextmanager
+def prevent_stdio_inheritance():
+    """Prevents child processes from inheriting the parent's stdio handles.
+
+    Fixes a deadlock on Windows where `google.auth.default()` spawns `gcloud`
+    via subprocess without redirecting stdin, causing it to inherit the
+    ProactorEventLoop's overlapping I/O handles used by MCP's stdio transport.
+    """
+    original_popen = subprocess.Popen
+
+    def safe_popen(*args, **kwargs):
+        if kwargs.get("stdin") is None:
+            kwargs["stdin"] = subprocess.DEVNULL
+        return original_popen(*args, **kwargs)
+
+    with patch("subprocess.Popen", new=safe_popen):
+        yield
 
 
 def _create_credentials() -> google.auth.credentials.Credentials:
@@ -52,7 +77,8 @@ def _create_credentials() -> google.auth.credentials.Credentials:
         # Create credentials using the access token provided by FastMCP
         return Credentials(token=token_obj.token)
 
-    credentials, _ = google.auth.default(scopes=[_ADS_SCOPE])
+    with prevent_stdio_inheritance():
+        credentials, _ = google.auth.default(scopes=[_ADS_SCOPE])
     return credentials
 
 
@@ -108,6 +134,8 @@ def format_output_value(value: Any) -> Any:
         return value.name
     elif isinstance(value, proto.Message):
         return proto.Message.to_dict(value)
+    elif isinstance(value, PbMessage):
+        return MessageToDict(value, preserving_proto_field_name=True)
     elif hasattr(value, "__iter__") and not isinstance(value, (str, bytes)):
         return [format_output_value(v) for v in value]
     else:

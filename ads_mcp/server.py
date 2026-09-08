@@ -16,11 +16,11 @@
 
 from ads_mcp.coordinator import mcp
 
-# The following imports are necessary to register the tools with the `mcp`
+# The following imports are necessary to register the resources with the `mcp`
 # object, even though they are not directly used in this file.
+# Tools are loaded dynamically via reflection in coordinator.py.
 # The `# noqa: F401` comment tells the linter to ignore the "unused import"
 # warning.
-from ads_mcp.tools import search, core, get_resource_metadata  # noqa: F401
 from ads_mcp.resources import (
     discovery,
     metrics,
@@ -38,7 +38,12 @@ def run_server() -> None:
     port = int(os.environ.get("PORT", "8080"))
 
     if _CLIENT_ID and _CLIENT_SECRET:
-        mcp.run(transport="streamable-http", port=port, host="0.0.0.0")
+        mcp.run(
+            transport="streamable-http",
+            port=port,
+            host="0.0.0.0",
+            uvicorn_config={"access_log": False},
+        )
     else:
         mcp.run()
 

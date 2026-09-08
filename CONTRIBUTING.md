@@ -55,21 +55,17 @@ nox -s format
     nox -s tests*
     ```
 
-### Test using Gemini
+### Test using Antigravity
 
-To test changes by issuing prompts in Gemini, modify the `command` for the
-`ads-mcp` entry in your `~/.gemini/settings.json` file so Gemini runs the
-server using your local source files.
+To test changes by issuing prompts in Antigravity, configure the `google-ads-mcp` entry in your Antigravity client configuration (refer to the docs at [https://antigravity.google/docs/mcp](https://antigravity.google/docs/mcp)) so Antigravity runs the server using your local source files.
 
-Replace `PATH_TO_REPO` in the following snippet with the path where you cloned
-the repo:
+Replace `PATH_TO_REPO` in the following snippet with the path where you cloned the repo:
 
 ```
       "command": "PATH_TO_REPO/.venv/bin/google-ads-mcp",
 ```
 
-When running the `gemini` command from a terminal, add the `--debug` option so
-Gemini outputs debug information as it processes prompts.
+When running the `agy` command from a terminal, add the `--debug` option so Antigravity outputs debug information as it processes prompts.
 
 ### Test from GitHub
 

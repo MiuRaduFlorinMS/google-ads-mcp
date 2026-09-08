@@ -71,8 +71,8 @@ class LLMToolSelectionTest(unittest.TestCase):
                 if selected_tool == expected_tool:
                     print(f"  -> Success: {selected_tool}", file=sys.stderr)
                 elif (
-                    selected_tool == "get_resource_metadata"
-                    and expected_tool == "search"
+                    selected_tool == "metadata_get_resource_metadata"
+                    and expected_tool == "search_search"
                 ):
                     # get_resource_metadata is a valid tool call when we expect an LLM to call search
                     # as it may not have the metadata info in the prompt or in the context.
