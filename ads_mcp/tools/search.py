@@ -29,7 +29,7 @@ from fastmcp.exceptions import ToolError
 
 
 def search(
-    customer_id: str,
+    customer_id: str | int,
     fields: List[str],
     resource: str,
     conditions: List[str] = None,
@@ -47,6 +47,8 @@ def search(
         limit: The maximum number of rows to return
 
     """
+
+    customer_id = utils.clean_customer_id(customer_id)
 
     ga_service = utils.get_googleads_service("GoogleAdsService")
 

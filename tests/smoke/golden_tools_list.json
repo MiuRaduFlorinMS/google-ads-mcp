@@ -30,7 +30,8 @@
         ],
         "type": "object",
         "x-fastmcp-wrap-result": true
-      }
+      },
+      "title": "Customers List Accessible Customers"
     },
     {
       "_meta": {
@@ -59,7 +60,8 @@
       "outputSchema": {
         "additionalProperties": true,
         "type": "object"
-      }
+      },
+      "title": "Metadata Get Resource Metadata"
     },
     {
       "_meta": {
@@ -83,8 +85,15 @@
             "type": "array"
           },
           "customer_id": {
-            "description": "The id of the customer",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "description": "The id of the customer"
           },
           "fields": {
             "description": "The fields to fetch",
@@ -141,7 +150,8 @@
         ],
         "type": "object",
         "x-fastmcp-wrap-result": true
-      }
+      },
+      "title": "Search Search"
     }
   ]
 }
