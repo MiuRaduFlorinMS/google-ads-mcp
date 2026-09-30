@@ -10,15 +10,17 @@ WORKDIR /app
 # Copy the project files into the container
 COPY . .
 
-# Install the project and its dependencies
-# We use --system to install into the system Python environment in the container
-RUN uv pip install --system .
+# Install google-ads-mcp into an ISOLATED venv so its mcp==2.0.0 / fastmcp>=4
+# cannot be clobbered by mcp-proxy's older mcp pin.
+RUN uv venv /app/venv
+RUN uv pip install --python /app/venv/bin/python .
 
-# Install the stdio-to-HTTP bridge
+# Install the stdio-to-HTTP bridge in the separate system environment.
 RUN uv pip install --system "mcp-proxy==0.9.0"
 
 # Expose port 8080 (default for Cloud Run)
 EXPOSE 8080
 
-# Wrap the existing entrypoint with mcp-proxy instead of running it directly
-CMD ["mcp-proxy", "--port", "8080", "--sse-path", "/sse", "--", "google-ads-mcp"]
+# mcp-proxy runs the google-ads-mcp binary FROM THE VENV as a stdio subprocess.
+# The subprocess inherits Cloud Run env vars (GOOGLE_ADS_*), so auth still works.
+CMD ["mcp-proxy", "--transport", "sse", "--port", "8080", "--host", "0.0.0.0", "--", "/app/venv/bin/google-ads-mcp"]

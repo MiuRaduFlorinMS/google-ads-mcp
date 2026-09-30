@@ -1,3 +1,10 @@
+# Rebuild Command 
+
+gcloud builds submit \
+  --project=adwords-api-224816 \
+  --tag europe-west9-docker.pkg.dev/adwords-api-224816/mcp-servers/google-ads-mcp-bridge:latest .
+
+
 # Google Ads MCP Server
 
 This repo contains the source code for running an
