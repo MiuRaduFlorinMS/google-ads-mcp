@@ -22,5 +22,6 @@ RUN uv pip install --system "mcp-proxy==0.9.0"
 EXPOSE 8080
 
 # mcp-proxy runs the google-ads-mcp binary FROM THE VENV as a stdio subprocess.
-# The subprocess inherits Cloud Run env vars (GOOGLE_ADS_*), so auth still works.
-CMD ["mcp-proxy", "--transport", "sse", "--port", "8080", "--host", "0.0.0.0", "--", "/app/venv/bin/google-ads-mcp"]
+# --pass-environment forwards the Cloud Run env vars (GOOGLE_ADS_*, NAO_SHARED_DATA_DIR)
+# to the child; without it mcp-proxy strips them and the subprocess sees none.
+CMD ["mcp-proxy", "--pass-environment", "--transport", "sse", "--port", "8080", "--host", "0.0.0.0", "--", "/app/venv/bin/google-ads-mcp"]
